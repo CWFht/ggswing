@@ -1,0 +1,1 @@
+여기에 golfer.glb, iron7.glb 같은 실제 3D 자산을 넣으면 됩니다.

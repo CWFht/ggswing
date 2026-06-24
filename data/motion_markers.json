@@ -1,0 +1,50 @@
+{
+  "note": "This is a marker/timing file for mapping UI stages to a GLB animation clip. If a real golfer.glb animation is added, these normalized values can be mapped to clip duration.",
+  "stages": [
+    {
+      "id": "address",
+      "time": 0.0,
+      "label": "어드레스"
+    },
+    {
+      "id": "takeaway",
+      "time": 0.13,
+      "label": "테이크어웨이"
+    },
+    {
+      "id": "p3",
+      "time": 0.27,
+      "label": "하프 백스윙"
+    },
+    {
+      "id": "top",
+      "time": 0.43,
+      "label": "백스윙 탑"
+    },
+    {
+      "id": "transition",
+      "time": 0.54,
+      "label": "전환"
+    },
+    {
+      "id": "delivery",
+      "time": 0.66,
+      "label": "딜리버리"
+    },
+    {
+      "id": "impact",
+      "time": 0.78,
+      "label": "임팩트"
+    },
+    {
+      "id": "release",
+      "time": 0.88,
+      "label": "릴리즈"
+    },
+    {
+      "id": "finish",
+      "time": 1.0,
+      "label": "피니시"
+    }
+  ]
+}

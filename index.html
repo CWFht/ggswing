@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SwingLab V3 · Three.js 3D Golfer</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brandIcon">⛳</div>
+        <div>
+          <b>SwingLab V3</b>
+          <small>Three.js 기반 3D 골퍼 · GLB 모델 교체 가능</small>
+        </div>
+      </div>
+
+      <div class="clubTabs">
+        <button data-club="driver">드라이버</button>
+        <button data-club="wood">우드</button>
+        <button data-club="hybrid">유틸</button>
+        <button class="active" data-club="iron7">7번 아이언</button>
+        <button data-club="wedge">웨지</button>
+        <button data-club="putter">퍼터</button>
+      </div>
+
+      <div class="statusNote">
+        <b>V3 목표</b><br>
+        프로토타입 골퍼 → 실제 <code>golfer.glb</code>로 교체 가능한 구조
+      </div>
+    </header>
+
+    <main class="layout">
+      <aside class="panel leftPanel">
+        <section>
+          <h3>시점 전환</h3>
+          <p class="hint">자유 회전은 마우스로, 고정 시점은 버튼으로 확인합니다.</p>
+          <div class="viewGrid">
+            <button class="active" data-view="front">정면</button>
+            <button data-view="side">측면</button>
+            <button data-view="rear">후면</button>
+            <button data-view="top">상단</button>
+            <button data-view="wrist">손목 확대</button>
+            <button data-view="impact">임팩트 확대</button>
+          </div>
+        </section>
+
+        <section>
+          <h3>오버레이</h3>
+          <div class="toggleRow">절차형 골퍼 표시 <span class="switch on" data-toggle="fallbackGolfer"></span></div>
+          <div class="toggleRow">클럽 헤드 궤적 <span class="switch on" data-toggle="clubTrail"></span></div>
+          <div class="toggleRow">손 이동 궤적 <span class="switch on" data-toggle="handTrail"></span></div>
+          <div class="toggleRow">발 압력 표시 <span class="switch on" data-toggle="pressure"></span></div>
+          <div class="toggleRow">래그 / 릴리즈 표시 <span class="switch on" data-toggle="lagGuide"></span></div>
+          <div class="toggleRow">임팩트 존 표시 <span class="switch on" data-toggle="impactGuide"></span></div>
+        </section>
+
+        <section>
+          <h3>스윙 단계</h3>
+          <p class="hint">각 단계에서 정지해 손·클럽·하체 순서를 확인합니다.</p>
+          <div id="stageList" class="stageList"></div>
+        </section>
+
+        <section class="assetBox">
+          <h3>실제 GLB 연결 위치</h3>
+          <p>
+            이 폴더에 <b>assets/golfer.glb</b>와 <b>assets/iron7.glb</b>를 넣으면
+            실제 모델 로드를 시도합니다. 모델이 없으면 현재의 3D 프로토타입 골퍼가 표시됩니다.
+          </p>
+        </section>
+      </aside>
+
+      <section class="viewer">
+        <canvas id="scene"></canvas>
+
+        <div class="viewerTop">
+          <div class="badge">
+            현재: <b id="stageBadge">임팩트</b> · <span id="clubBadge">7번 아이언</span>
+          </div>
+          <div class="controls">
+            <button id="playBtn">일시정지</button>
+            <button id="resetBtn">처음</button>
+            <select id="speed">
+              <option value="0.25">0.25x</option>
+              <option value="0.5" selected>0.5x</option>
+              <option value="0.8">0.8x</option>
+              <option value="1.2">1.2x</option>
+              <option value="1.8">1.8x</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="viewerBottom">
+          <div class="glass">
+            <small>클럽 스피드</small>
+            <b id="speedFeel">MAX</b>
+          </div>
+          <div class="glass">
+            <small>래그 / 릴리즈</small>
+            <b id="lagFeel">릴리즈</b>
+          </div>
+          <div class="glass">
+            <small>왼발 압력</small>
+            <b><span id="leadFeel">84</span>%</b>
+          </div>
+        </div>
+
+        <div class="loading" id="loading">
+          <b>3D 장면 준비 중</b>
+          <span>모델이 없으면 내장 프로토타입 골퍼로 실행됩니다.</span>
+        </div>
+      </section>
+
+      <aside class="panel rightPanel">
+        <section class="stageCard">
+          <small>현재 모션 해석</small>
+          <h2 id="stageTitle">임팩트</h2>
+          <p id="stageDesc">손이 먼저 통과하고 클럽헤드가 빠르게 풀리며 공을 통과합니다.</p>
+        </section>
+
+        <section>
+          <h3>동작 체크포인트</h3>
+          <div id="checks" class="checks"></div>
+        </section>
+
+        <section>
+          <h3>수치형 힌트</h3>
+          <div class="metrics">
+            <div class="metric">
+              <small>왼발 압력</small>
+              <b><span id="leadMetric">84</span>%</b>
+              <div class="bar"><i id="leadBar" style="width:84%"></i></div>
+            </div>
+            <div class="metric">
+              <small>클럽 스피드</small>
+              <b id="speedMetric">빠름</b>
+            </div>
+            <div class="metric">
+              <small>래그 상태</small>
+              <b id="lagMetric">릴리즈</b>
+            </div>
+            <div class="metric">
+              <small>손 위치</small>
+              <b id="handMetric">공 앞</b>
+            </div>
+          </div>
+        </section>
+
+        <section class="nextBox">
+          <h3>다음 현실화 단계</h3>
+          <ol>
+            <li><b>Blender</b>에서 골퍼 모델 리깅</li>
+            <li>Adam Scott 스타일 7번 아이언 스윙 클립 제작</li>
+            <li><code>golfer.glb</code> 안에 애니메이션 포함해 내보내기</li>
+            <li>이 페이지의 fallback 골퍼를 숨기고 실제 모델 표시</li>
+          </ol>
+        </section>
+      </aside>
+    </main>
+
+    <footer class="timelinePanel">
+      <div class="footerCopy">
+        <b id="footerTitle">임팩트</b>
+        <small id="footerMsg">손이 공보다 앞을 지나가고 클럽헤드가 뒤늦게 풀리는 구간입니다.</small>
+      </div>
+      <div class="scrub">
+        <input id="progress" type="range" min="0" max="1000" value="780" />
+        <div id="timeline" class="timeline"></div>
+      </div>
+      <div class="legend">
+        <span><i class="orange"></i>클럽 궤적</span>
+        <span><i class="purple"></i>손 궤적</span>
+        <span><i class="green"></i>압력 이동</span>
+        <span><i class="red"></i>임팩트</span>
+      </div>
+    </footer>
+  </div>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
