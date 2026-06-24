@@ -52,3 +52,18 @@ assets/iron7.glb
 3. GLB로 내보내기
 4. `assets/golfer.glb`로 저장
 5. 페이지에서 내장 프로토타입 골퍼 대신 실제 모델 재생
+
+
+## GitHub Pages 안정버전 안내
+
+이번 버전은 `importmap`, `type="module"`, `esm.sh`를 사용하지 않습니다.
+브라우저 호환성을 위해 아래 일반 script 방식을 사용합니다.
+
+```html
+<script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="./app.js?v=5"></script>
+```
+
+업로드 후 `Ctrl + F5`로 강력 새로고침하세요.

@@ -1,6 +1,11 @@
-import * as THREE from 'https://esm.sh/three@0.165.0';
-import { OrbitControls } from 'https://esm.sh/three@0.165.0/examples/jsm/controls/OrbitControls.js?deps=three@0.165.0';
-import { GLTFLoader } from 'https://esm.sh/three@0.165.0/examples/jsm/loaders/GLTFLoader.js?deps=three@0.165.0';
+
+if (!window.THREE) {
+  const loading = document.querySelector('#loading');
+  if (loading) {
+    loading.innerHTML = '<b>Three.js 로드 실패</b><span>인터넷 연결 또는 CDN 차단 문제입니다. 새로고침하거나 다른 네트워크에서 확인해주세요.</span>';
+  }
+  throw new Error('THREE global not loaded');
+}
 
 const canvas = document.querySelector('#scene');
 const loading = document.querySelector('#loading');
@@ -63,7 +68,7 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 const camera = new THREE.PerspectiveCamera(40, 1, .1, 100);
 camera.position.set(0, 2.2, 6.0);
 
-const controls = new OrbitControls(camera, renderer.domElement);
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.target.set(0, .95, 0);
 controls.enableDamping = true;
 controls.dampingFactor = .08;
@@ -147,7 +152,7 @@ const segmentData = [
 
 const segments = {};
 for(const [name,, , radius, mat] of segmentData){
-  const mesh = new THREE.Mesh(new THREE.CapsuleGeometry(radius, 1, 8, 16), materials[mat]);
+  const mesh = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, 1, 16), materials[mat]);
   mesh.castShadow = true;
   mesh.receiveShadow = true;
   fallback.add(mesh);
@@ -485,7 +490,8 @@ function roundRect2d(ctx,x,y,w,h,r){
 }
 
 async function tryLoadGLB(){
-  const loader = new GLTFLoader();
+  if (!THREE.GLTFLoader) { throw new Error('GLTFLoader not available'); }
+    const loader = new THREE.GLTFLoader();
   try{
     const gltf = await loader.loadAsync('./assets/golfer.glb');
     externalGroup.add(gltf.scene);
